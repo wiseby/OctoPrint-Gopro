@@ -1,0 +1,4 @@
+include README.md
+recursive-include octoprint_gopro/templates *
+recursive-include octoprint_gopro/translations *
+recursive-include octoprint_gopro/static *
