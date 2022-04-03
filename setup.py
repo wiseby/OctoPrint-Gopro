@@ -34,31 +34,8 @@ plugin_license = "AGPLv3"
 
 # Any additional requirements besides OctoPrint should be listed here
 plugin_requires = [
-    "betterproto==1.2.5",
     "bleak==0.12.1",
-    "certifi==2021.10.8",
-    "chardet==4.0.0",
-    "commonmark==0.9.1",
-    "construct==2.10.68",
-    "grpclib==0.4.2",
-    "h2==4.1.0",
-    "hpack==4.0.0",
-    "hyperframe==6.0.1",
-    "idna==2.10",
-    "multidict==6.0.2",
-    "open-gopro==0.7.1",
-    "protobuf==3.19.4",
-    "pycodestyle==2.8.0",
-    "pycparser==2.21",
-    "Pygments==2.11.2",
-    "pythonnet==2.5.2",
-    "requests==2.25.1",
-    "rich==12.0.0",
-    "stringcase==1.2.0",
-    "toml==0.10.2",
     "typing-extensions==4.1.1",
-    "urllib3==1.26.8",
-    "wrapt==1.14.0"
 ]
 
 ### --------------------------------------------------------------------------------------------------------------------

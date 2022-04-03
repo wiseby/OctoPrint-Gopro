@@ -3,25 +3,21 @@ import logging
 from binascii import hexlify
 
 from constants import *
-import requests.sessions
 import re
 import json
 import logging
 from typing import Dict, Any, List, Callable
 from bleak import BleakScanner, BleakClient
 from bleak.backends.device import BLEDevice as BleakDevice
-from open_gopro.wifi.adapters import Wireless
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger()
-
 
 class GoProCamera:
     def __init__(self) -> None:
         self.identifier = None
         self.devices: Dict[str, BleakDevice] = {}
         self.client: BleakClient
-        self.wifi: Wireless
         self.event = asyncio.Event()
 
     def notification_handler(self, handle: int, data: bytes) -> None:
@@ -118,31 +114,6 @@ class GoProCamera:
         self.event.clear()
         await self.client.write_gatt_char(COMMAND_REQ_UUID, bytearray(SHUTTER_ON))
         await self.event.wait()  # Wait to receive the notification response
-
-    async def connect_wifi(self):
-        # Read from WiFi AP SSID BleUUID
-        logger.info("Reading the WiFi AP SSID")
-        ssid = await self.client.read_gatt_char(WIFI_AP_SSID_UUID)
-        ssid = ssid.decode()
-        logger.info(f"SSID is {ssid}")
-
-        # Read from WiFi AP Password BleUUID
-        logger.info("Reading the WiFi AP password")
-        password = await self.client.read_gatt_char(WIFI_AP_PASSWORD_UUID)
-        password = password.decode()
-        logger.info(f"Password is {password}")
-
-        # Write to the Command Request BleUUID to enable WiFi
-        logger.info("Enabling the WiFi AP")
-        self.event.clear()
-        await self.client.write_gatt_char(COMMAND_REQ_UUID, bytearray(ENABLE_WIFI_AP))
-        await self.event.wait()  # Wait to receive the notification response
-        logger.info("WiFi AP is enabled")
-        # Now use the Open GoPro Python module to connect to the WiFi
-        self.wifi = Wireless()
-        logger.info("Connecting to GoPro WiFi AP")
-        if self.wifi.connect(ssid, password):
-            logger.info("Wifi Connected!")
 
     async def disconnect_wifi(self):
         self.event.clear()
