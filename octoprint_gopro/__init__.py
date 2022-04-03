@@ -1,14 +1,27 @@
 # coding=utf-8
-from __future__ import absolute_import
-
-
-### (Don't forget to remove me)
-# This is a basic skeleton for your plugin's __init__.py. You probably want to adjust the class name of your plugin
-# as well as the plugin mixins it's subclassing from. This is really just a basic skeleton to get you started,
-# defining your plugin as a template plugin, settings and asset plugin. Feel free to add or remove mixins
-# as necessary.
+##################################################################################
+# OctoPrint-GoPro - An OctoPrint Plugin that enables the use of a GoPro camera for timelapses
+# Copyright (C) 2022  Lucas Wiseby
+##################################################################################
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 #
-# Take a look at the documentation on what other plugin mixins are available.
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see the following:
+# https://github.com/wiseby/OctoPrint-Gopro/main/LICENSE.txt
+#
+# You can contact the author either through the git-hub repository, or at the
+# following email address: l.wiseby@gmail.com
+##################################################################################
+
+from __future__ import absolute_import
 
 import octoprint.plugin
 from octoprint.events import Events

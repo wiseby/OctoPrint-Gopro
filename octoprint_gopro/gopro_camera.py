@@ -1,10 +1,31 @@
+# coding=utf-8
+##################################################################################
+# OctoPrint-GoPro - An OctoPrint Plugin that enables the use of a GoPro camera for timelapses
+# Copyright (C) 2022  Lucas Wiseby
+##################################################################################
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see the following:
+# https://github.com/wiseby/OctoPrint-Gopro/main/LICENSE.txt
+#
+# You can contact the author either through the git-hub repository, or at the
+# following email address: l.wiseby@gmail.com
+##################################################################################
+
 import asyncio
 import logging
 from binascii import hexlify
-
 from constants import *
 import re
-import json
 import logging
 from typing import Dict, Any, List, Callable
 from bleak import BleakScanner, BleakClient
@@ -114,25 +135,3 @@ class GoProCamera:
         self.event.clear()
         await self.client.write_gatt_char(COMMAND_REQ_UUID, bytearray(SHUTTER_ON))
         await self.event.wait()  # Wait to receive the notification response
-
-    async def disconnect_wifi(self):
-        self.event.clear()
-        if self.wifi.disconnect():
-            logger.info("Wifi Disconnected!")
-
-    def get_media_list(self):
-        # Build the HTTP GET request
-        url = MEDIA_LIST_URL
-
-        logger.info(f"Getting the media list: sending {url}")
-        response = requests.get(url, timeout=10, stream=False);
-        # Check for errors (if an error is found, an exception will be raised)
-        logger.info("Command sent successfully")
-        raw_data = response.content.decode()
-        parsed_data = json.loads(raw_data)
-        for dir in parsed_data["media"]:
-            for file in dir["fs"]:
-                logger.info(f"{dir['d']}/{file['n']}")
-
-        # Log response as json
-        logger.info(f"Response: {json.dumps(response.json(), indent=2)}")
