@@ -23,23 +23,30 @@
 
 from __future__ import absolute_import
 
+import flask
+import asyncio
 import octoprint.plugin
 from octoprint.events import Events
-from gopro_camera import GoProCamera
+from octoprint.plugin.core import logging
+from octoprint_gopro.camera import GoProCamera
 
 class GoproPlugin(octoprint.plugin.SettingsPlugin,
-    octoprint.plugin.EventHandlerPlugin,
-    octoprint.plugin.AssetPlugin,
-    octoprint.plugin.TemplatePlugin
-):
+                  octoprint.plugin.StartupPlugin,
+                  octoprint.plugin.EventHandlerPlugin,
+                  octoprint.plugin.SimpleApiPlugin,
+                  octoprint.plugin.AssetPlugin,
+                  octoprint.plugin.TemplatePlugin):
 
     def __init__(self):
         self.camera = None
+        self._console_logger = logging.getLogger(
+            "octoprint.plugins.gopro.console"
+        )
 
     ##~~ SettingsPlugin mixin
 
-    def on_startup(self):
-        self.camera = GoProCamera()
+    def on_startup(self, host, port):
+        self.camera = GoProCamera(self._console_logger)
 
     def get_settings_defaults(self):
         return {
@@ -79,12 +86,35 @@ class GoproPlugin(octoprint.plugin.SettingsPlugin,
             }
         }
 
+    ##~~ SimpleApiPlugin mixin
+
+    def get_api_commands(self):
+        return dict(
+            configure=['identifier', 'settings'],
+            connect=['identifier']
+        )
+
+    def on_api_command(self, command, data):
+        if command == 'configure':
+            return flask.jsonify(dict(success=True, msg='Configured device with identifier ' + command['identifier']))
+        if command == 'connect':
+            self._console_logger.info('connecting to gopro...')
+            self.camera.connect_ble()
+            return flask.jsonify(dict(success=True, msg=str('Connection has been made')))
+
+        else:
+            return flask.jsonify(dict(success=False, msg=str('Missing operation')))
+
+
+    def on_api_get(self, request):
+        return super().on_api_get(request)
+
     ##~~ EventHandlerPlugin mixin
 
-    async def on_event(self, event, payload):
+    def on_event(self, event, payload):
         if (event == Events.PRINT_STARTED):
-            await self.camera.connect_ble()
-            await self.camera.configure_photo_mode()
+            asyncio.run_coroutine_threadsafe(self.camera.connect_ble())
+            asyncio.run_coroutine_threadsafe(self.camera.configure_photo_mode())
         if (event == Events.CAPTURE_START):
             self.camera.snap_photo()
 

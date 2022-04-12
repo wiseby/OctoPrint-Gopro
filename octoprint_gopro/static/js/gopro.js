@@ -8,9 +8,42 @@ $(function() {
     function GoproViewModel(parameters) {
         var self = this;
 
-        // assign the injected parameters, e.g.:
-        // self.loginStateViewModel = parameters[0];
-        // self.settingsViewModel = parameters[1];
+        self.settingsViewModel = parameters[0];
+
+        self.connecting = ko.observable(false);
+        self.paired = ko.observable(false);
+        self.message = ko.observable('');
+
+        self.resolution = ko.observable('4k');
+        self.frames = ko.observable('60');
+        self.mode = ko.observable('cinematic');
+
+        self.connectGopro = function() {
+            console.log('Connecting...');
+            const payload = {
+                command: 'connect',
+                identifier: ''
+            };
+            self.connecting(true);
+            $.ajax({
+                url: API_BASEURL + "plugin/gopro",
+                type: "POST",
+                dataType: "json",
+                data: JSON.stringify(payload),
+                contentType: "application/json; charset=UTF-8",
+                success: function(response) {
+                    self.paired(response.success);
+                    if (!response.success && response.hasOwnProperty("msg")) {
+                        self.message(response.msg);
+                    } else {
+                        self.testMessage(undefined);
+                    }
+                },
+                complete: function() {
+                    self.connecting(false);
+                }
+            });
+        }
 
         // TODO: Implement your plugin's view model here.
     }
@@ -22,8 +55,8 @@ $(function() {
     OCTOPRINT_VIEWMODELS.push({
         construct: GoproViewModel,
         // ViewModels your plugin depends on, e.g. loginStateViewModel, settingsViewModel, ...
-        dependencies: [ /* "loginStateViewModel", "settingsViewModel" */ ],
+        dependencies: [ "settingsViewModel" ],
         // Elements to bind to, e.g. #settings_plugin_gopro, #tab_plugin_gopro, ...
-        elements: [ /* ... */ ]
+        elements: [ settings_plugin_gopro ]
     });
 });
