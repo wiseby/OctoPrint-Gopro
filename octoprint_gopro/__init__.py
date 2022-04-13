@@ -29,6 +29,7 @@ import octoprint.plugin
 from octoprint.events import Events
 from octoprint.plugin.core import logging
 from octoprint_gopro.camera import GoProCamera
+from octoprint_gopro.manager import WorkerManager
 
 class GoproPlugin(octoprint.plugin.SettingsPlugin,
                   octoprint.plugin.StartupPlugin,
@@ -42,6 +43,7 @@ class GoproPlugin(octoprint.plugin.SettingsPlugin,
         self._console_logger = logging.getLogger(
             "octoprint.plugins.gopro.console"
         )
+        self.worker_manager = WorkerManager(plugin=self)
 
     ##~~ SettingsPlugin mixin
 
@@ -99,8 +101,13 @@ class GoproPlugin(octoprint.plugin.SettingsPlugin,
             return flask.jsonify(dict(success=True, msg='Configured device with identifier ' + command['identifier']))
         if command == 'connect':
             self._console_logger.info('connecting to gopro...')
-            self.camera.connect_ble()
-            return flask.jsonify(dict(success=True, msg=str('Connection has been made')))
+            asyncio.run_coroutine_threadsafe(
+                self.camera.connect_ble(), self.worker_manager.loop)
+            return flask.jsonify(dict(success=True, msg=str('Connection has been started')))
+        if command == 'testPic':
+            asyncio.run_coroutine_threadsafe(
+                self.camera.snap_photo(), self.worker_manager.loop)
+            return flask.jsonify(dict(success=True, msg='Configured device with identifier ' + command['identifier']))
 
         else:
             return flask.jsonify(dict(success=False, msg=str('Missing operation')))
@@ -113,8 +120,18 @@ class GoproPlugin(octoprint.plugin.SettingsPlugin,
 
     def on_event(self, event, payload):
         if (event == Events.PRINT_STARTED):
-            asyncio.run_coroutine_threadsafe(self.camera.connect_ble())
-            asyncio.run_coroutine_threadsafe(self.camera.configure_photo_mode())
+            threadingEvent = asyncio.Event()
+            asyncio.run_coroutine_threadsafe(
+                self.camera.connect_ble(),
+                self.worker_manager.loop
+            ).add_done_callback(threadingEvent.set())
+            threadingEvent.wait()
+            threadingEvent.clear()
+            asyncio.run_coroutine_threadsafe(
+                self.camera.configure_photo_mode(),
+                self.worker_manager.loop
+            ).add_done_callback(threadingEvent.set())
+            threadingEvent.wait()
         if (event == Events.CAPTURE_START):
             self.camera.snap_photo()
 
