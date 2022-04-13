@@ -26,7 +26,6 @@ import logging
 from binascii import hexlify
 from octoprint_gopro.constants import *
 import re
-from typing import Dict, Any, List
 from bleak import BleakScanner, BleakClient
 from bleak.backends.device import BLEDevice as BleakDevice
 
@@ -37,11 +36,11 @@ class GoProCamera:
     def __init__(self, logger) -> None:
         self.identifier = None
         self.logger = logger
-        self.devices: Dict[str, BleakDevice] = {}
-        self.client: BleakClient
+        self.devices = {}
+        self.client
         self.event = asyncio.Event()
 
-    def notification_handler(self, handle: int, data: bytes) -> None:
+    def notification_handler(self, handle, data) -> None:
         self.logger.info(f'Received response at {handle=}: {hexlify(data, ":")!r}')
 
         # If this is the correct handle and the status is success, the command was a success
@@ -65,15 +64,15 @@ class GoProCamera:
         self.logger.info("Scanning for bluetooth devices...")
         # Scan callback to also catch nonconnectable scan responses
 
-        def _scan_callback(device: BleakDevice, _: Any) -> None:
+        def _scan_callback(device, _) -> None:
             # Add to the dict if not unknown
             if device.name != "Unknown" and device.name is not None:
                 devices[device.name] = device
 
-        devices: Dict[str, BleakDevice] = {}
+        devices = {}
 
         # Scan until we find devices
-        matched_devices: List[BleakDevice] = []
+        matched_devices = []
         while len(matched_devices) == 0:
             # Now get list of connectable advertisements
             for device in await BleakScanner.discover(timeout=5, detection_callback=_scan_callback):
