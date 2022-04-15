@@ -48,7 +48,7 @@ class GoproPlugin(octoprint.plugin.SettingsPlugin,
     ##~~ SettingsPlugin mixin
 
     def on_startup(self, host, port):
-        self._console_logger.log('Startup initializes')
+        self._console_logger.info('Startup initializes')
         asyncio.run_coroutine_threadsafe(
             self.camera.connect_ble(), self.worker_manager.loop)
 
