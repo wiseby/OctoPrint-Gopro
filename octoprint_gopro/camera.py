@@ -27,20 +27,19 @@ from binascii import hexlify
 from octoprint_gopro.constants import *
 import re
 from bleak import BleakScanner, BleakClient
-from bleak.backends.device import BLEDevice as BleakDevice
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger()
 
 class GoProCamera:
-    def __init__(self, logger) -> None:
+    def __init__(self, logger):
         self.identifier = None
         self.logger = logger
         self.devices = {}
-        self.client
+        self.client = None
         self.event = asyncio.Event()
 
-    def notification_handler(self, handle, data) -> None:
+    def notification_handler(self, handle, data):
         self.logger.info(f'Received response at {handle=}: {hexlify(data, ":")!r}')
 
         # If this is the correct handle and the status is success, the command was a success
@@ -57,7 +56,7 @@ class GoProCamera:
 
     def initialize(self):
         self.logger.info("connecting client")
-        self.connect_ble(self.notification_handler)
+        self.connect_ble()
 
     async def connect_ble(self):
         # Scan for devices

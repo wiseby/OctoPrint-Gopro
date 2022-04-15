@@ -39,16 +39,18 @@ class GoproPlugin(octoprint.plugin.SettingsPlugin,
                   octoprint.plugin.TemplatePlugin):
 
     def __init__(self):
-        self.camera = None
         self._console_logger = logging.getLogger(
             "octoprint.plugins.gopro.console"
         )
+        self.camera = GoProCamera(self._console_logger)
         self.worker_manager = WorkerManager(plugin=self)
 
     ##~~ SettingsPlugin mixin
 
     def on_startup(self, host, port):
-        self.camera = GoProCamera(self._console_logger)
+        self._console_logger.log('Startup initializes')
+        asyncio.run_coroutine_threadsafe(
+            self.camera.connect_ble(), self.worker_manager.loop)
 
     def get_settings_defaults(self):
         return {
