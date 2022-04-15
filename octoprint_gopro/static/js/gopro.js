@@ -19,7 +19,6 @@ $(function() {
         self.mode = ko.observable('cinematic');
 
         self.connectGopro = function() {
-            console.log('Connecting...');
             const payload = {
                 command: 'connect',
                 identifier: ''
@@ -32,11 +31,38 @@ $(function() {
                 data: JSON.stringify(payload),
                 contentType: "application/json; charset=UTF-8",
                 success: function(response) {
+                    console.log('Response: ', response);
                     self.paired(response.success);
                     if (!response.success && response.hasOwnProperty("msg")) {
                         self.message(response.msg);
                     } else {
-                        self.testMessage(undefined);
+                        self.message(undefined);
+                    }
+                },
+                complete: function() {
+                    self.connecting(false);
+                }
+            });
+        }
+
+        self.testPhoto = function() {
+            const payload = {
+                command: 'testPic',
+                identifier: ''
+            };
+            $.ajax({
+                url: API_BASEURL + "plugin/gopro",
+                type: "POST",
+                dataType: "json",
+                data: JSON.stringify(payload),
+                contentType: "application/json; charset=UTF-8",
+                success: function(response) {
+                    console.log('Response: ', response);
+                    self.paired(response.success);
+                    if (!response.success && response.hasOwnProperty("msg")) {
+                        self.message(response.msg);
+                    } else {
+                        self.message(undefined);
                     }
                 },
                 complete: function() {
