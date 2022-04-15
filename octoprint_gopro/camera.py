@@ -22,14 +22,10 @@
 ##################################################################################
 
 import asyncio
-import logging
 from binascii import hexlify
 from octoprint_gopro.constants import *
 import re
 from bleak import BleakScanner, BleakClient
-
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger()
 
 class GoProCamera:
     def __init__(self, logger):
@@ -40,7 +36,7 @@ class GoProCamera:
         self.event = asyncio.Event()
 
     def notification_handler(self, handle, data):
-        self.logger.info(f'Received response at {handle=}: {hexlify(data, ":")!r}')
+        self.logger.info(f'Received response at {handle}: {hexlify(data, ":")!r}')
 
         # If this is the correct handle and the status is success, the command was a success
         if self.client.services.characteristics[handle].uuid == COMMAND_RSP_UUID and data[2] == 0x00:
@@ -79,7 +75,7 @@ class GoProCamera:
                     self.devices[device.name] = device
             # Log every device we discovered
             for d in self.devices:
-                logger.info(f"\tDiscovered: {d}")
+                self.logger.info(f"\tDiscovered: {d}")
             # Now look for our matching device(s)
             token = re.compile(
                 r"GoPro [A-Z0-9]{4}" if self.identifier is None else f"GoPro {self.identifier}")
