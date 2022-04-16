@@ -3,8 +3,6 @@ import concurrent
 import logging
 import threading
 
-from octoprint.events import Events
-
 logger = logging.getLogger("octoprint.plugins.octoprint_gopro.manager")
 
 

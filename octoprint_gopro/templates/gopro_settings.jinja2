@@ -1,8 +1,21 @@
 <div>
   <button class="btn btn-primary" data-bind="click: function() { $root.connectGopro(); }">
-    Pair GoPro
-    <i class="icon-spinner icon-spin" data-bind="visible: connecting()"></i>
+    Connect GoPro
   </button>
+
+  <button class="btn btn-primary" data-bind="click: function() { $root.disconnectGopro(); }">
+    Disconnect GoPro
+  </button>
+
+  <button class="btn btn-primary" data-bind="click: function() { $root.checkConnection(); }">
+    Check Connection
+  </button>
+
+  <button class="btn btn-primary" data-bind="click: function() { $root.testPhoto(); }">
+    Test Camera
+  </button>
+
+  <p data-bind="visible: connected">Gopro is connected</p>
 
   <p data-bind="text: message"></p>
 </div>

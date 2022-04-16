@@ -12,6 +12,7 @@ $(function() {
 
         self.connecting = ko.observable(false);
         self.paired = ko.observable(false);
+        self.connected = ko.observable(false);
         self.message = ko.observable('');
 
         self.resolution = ko.observable('4k');
@@ -45,11 +46,12 @@ $(function() {
             });
         }
 
-        self.testPhoto = function() {
+        self.disconnectGopro = function() {
             const payload = {
-                command: 'testPic',
+                command: 'disconnect',
                 identifier: ''
             };
+            self.connecting(true);
             $.ajax({
                 url: API_BASEURL + "plugin/gopro",
                 type: "POST",
@@ -71,7 +73,49 @@ $(function() {
             });
         }
 
-        // TODO: Implement your plugin's view model here.
+        self.checkConnection = function() {
+            const payload = {
+                command: 'connectionStatus',
+                identifier: ''
+            };
+            $.ajax({
+                url: API_BASEURL + "plugin/gopro",
+                type: "POST",
+                dataType: "json",
+                data: JSON.stringify(payload),
+                contentType: "application/json; charset=UTF-8",
+                success: function(response) {
+                    self.connected(response.success);
+                    if (!response.success && response.hasOwnProperty("msg")) {
+                        self.message(response.msg);
+                    } else {
+                        self.message('Something went wrong');
+                    }
+                },
+            });
+        }
+
+        self.testPhoto = function() {
+            const payload = {
+                command: 'testPic',
+                identifier: '',
+                settings: ''
+            };
+            $.ajax({
+                url: API_BASEURL + "plugin/gopro",
+                type: "POST",
+                dataType: "json",
+                data: JSON.stringify(payload),
+                contentType: "application/json; charset=UTF-8",
+                success: function(response) {
+                    if (!response.success && response.hasOwnProperty("msg")) {
+                        self.message(response.msg);
+                    } else {
+                        self.message(undefined);
+                    }
+                }
+            });
+        }
     }
 
     /* view model class, parameters for constructor, container to bind to

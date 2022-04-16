@@ -50,11 +50,7 @@ class GoProCamera:
         # Notify the writer
         self.event.set()
 
-    def initialize(self):
-        self.logger.info("connecting client")
-        self.connect_ble()
-
-    async def connect_ble(self):
+    async def createClient(self):
         # Scan for devices
         self.logger.info("Scanning for bluetooth devices...")
         # Scan callback to also catch nonconnectable scan responses
@@ -88,6 +84,19 @@ class GoProCamera:
 
         self.logger.info(f"Establishing BLE connection to {device}...")
         self.client = BleakClient(device)
+
+    async def reset_connection(self):
+        if self.client is not None:
+            await self.client.disconnect()
+        await self.connect_ble()
+
+    async def connect_ble(self):
+        if self.client is None:
+            self.logger.info('Creating a new client')
+            await self.createClient()
+
+
+        self.logger.info('Connecting client...')
         await self.client.connect(timeout=15)
         self.logger.info("BLE Connected!")
 
@@ -115,15 +124,9 @@ class GoProCamera:
         self.event.clear()
         await self.client.write_gatt_char(COMMAND_REQ_UUID, bytearray(PHOTO_GROUP))
         await self.event.wait()  # Wait to receive the notification response
-
-        self.logger.info("Changing to 4k resolution")
         self.event.clear()
-        await self.client.write_gatt_char(SETTINGS_REQ_UUID, bytearray(RES4K))
-        await self.event.wait()  # Wait to receive the notification response
 
     async def snap_photo(self):
-        # Write to command request BleUUID adjust the settings
-        self.logger.info("Taking a shoot")
+        await self.client.write_gatt_char(COMMAND_REQ_UUID, bytearray(SHUTTER_ON)),
+        await self.event.wait()
         self.event.clear()
-        await self.client.write_gatt_char(COMMAND_REQ_UUID, bytearray(SHUTTER_ON))
-        await self.event.wait()  # Wait to receive the notification response

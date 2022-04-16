@@ -52,10 +52,12 @@ class GoproPlugin(octoprint.plugin.SettingsPlugin,
         asyncio.run_coroutine_threadsafe(
             self.camera.connect_ble(), self.worker_manager.loop)
 
+
     def get_settings_defaults(self):
         return {
             # put your plugin's default settings here
         }
+
 
     ##~~ AssetPlugin mixin
 
@@ -95,7 +97,10 @@ class GoproPlugin(octoprint.plugin.SettingsPlugin,
     def get_api_commands(self):
         return dict(
             configure=['identifier', 'settings'],
-            connect=['identifier']
+            connect=['identifier'],
+            disconnect=['identifier'],
+            connectionStatus=[],
+            testPic=['identifier', 'settings']
         )
 
     def on_api_command(self, command, data):
@@ -104,12 +109,16 @@ class GoproPlugin(octoprint.plugin.SettingsPlugin,
         if command == 'connect':
             self._console_logger.info('connecting to gopro...')
             asyncio.run_coroutine_threadsafe(
-                self.camera.connect_ble(), self.worker_manager.loop)
-            return flask.jsonify(dict(success=True, msg=str('Connection has been started')))
+                self.camera.reset_connection(), self.worker_manager.loop)
+            return flask.jsonify(dict(success=True, msg=str('Connection has been reset')))
+        if command == 'disconnect':
+            return flask.jsonify(dict(success=self.camera.client is not None))
+        if command == 'connectionStatus':
+            return flask.jsonify(dict(success=self.camera.client is not None))
         if command == 'testPic':
             asyncio.run_coroutine_threadsafe(
                 self.camera.snap_photo(), self.worker_manager.loop)
-            return flask.jsonify(dict(success=True, msg='Configured device with identifier ' + command['identifier']))
+            return flask.jsonify(dict(success=True, msg='Camera command triggered'))
 
         else:
             return flask.jsonify(dict(success=False, msg=str('Missing operation')))
@@ -122,20 +131,11 @@ class GoproPlugin(octoprint.plugin.SettingsPlugin,
 
     def on_event(self, event, payload):
         if (event == Events.PRINT_STARTED):
-            threadingEvent = asyncio.Event()
             asyncio.run_coroutine_threadsafe(
-                self.camera.connect_ble(),
-                self.worker_manager.loop
-            ).add_done_callback(threadingEvent.set())
-            threadingEvent.wait()
-            threadingEvent.clear()
-            asyncio.run_coroutine_threadsafe(
-                self.camera.configure_photo_mode(),
-                self.worker_manager.loop
-            ).add_done_callback(threadingEvent.set())
-            threadingEvent.wait()
+                self.camera.configure_photo_mode(), self.worker_manager.loop)
         if (event == Events.CAPTURE_START):
-            self.camera.snap_photo()
+            asyncio.run_coroutine_threadsafe(
+                self.camera.snap_photo(), self.worker_manager.loop)
 
 
 # If you want your plugin to be registered within OctoPrint under a different name than what you defined in setup.py
