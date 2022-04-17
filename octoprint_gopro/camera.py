@@ -36,7 +36,7 @@ class GoProCamera:
         self.event = asyncio.Event()
 
     def notification_handler(self, handle, data):
-        self.logger.info(f'Received response at {handle}: {hexlify(data, ":")!r}')
+        self.logger.info(f'Received response at {handle}: {hexlify(data)!r}')
 
         # If this is the correct handle and the status is success, the command was a success
         if self.client.services.characteristics[handle].uuid == COMMAND_RSP_UUID and data[2] == 0x00:
@@ -88,7 +88,7 @@ class GoProCamera:
     async def reset_connection(self):
         if self.client is not None:
             await self.client.disconnect()
-        await self.connect_ble()
+        self.client = None
 
     async def connect_ble(self):
         if self.client is None:

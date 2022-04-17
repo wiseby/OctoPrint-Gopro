@@ -109,10 +109,13 @@ class GoproPlugin(octoprint.plugin.SettingsPlugin,
         if command == 'connect':
             self._console_logger.info('connecting to gopro...')
             asyncio.run_coroutine_threadsafe(
-                self.camera.reset_connection(), self.worker_manager.loop)
+                self.camera.connect_ble(), self.worker_manager.loop)
             return flask.jsonify(dict(success=True, msg=str('Connection has been reset')))
         if command == 'disconnect':
-            return flask.jsonify(dict(success=self.camera.client is not None))
+            self._console_logger.info('disconnecting gopro...')
+            asyncio.run_coroutine_threadsafe(
+                self.camera.reset_connection(), self.worker_manager.loop)
+            return flask.jsonify(dict(success=True))
         if command == 'connectionStatus':
             return flask.jsonify(dict(success=self.camera.client is not None))
         if command == 'testPic':
