@@ -34,7 +34,7 @@ plugin_license = "AGPLv3"
 
 # Any additional requirements besides OctoPrint should be listed here
 plugin_requires = [
-    "bleak==0.12.1"
+    "bleak==0.14.2"
 ]
 
 ### --------------------------------------------------------------------------------------------------------------------
